@@ -1,5 +1,6 @@
 import pygame
 from Map import Map
+from Player import Player
 
 class Screen:
 
@@ -34,7 +35,9 @@ class Screen:
         self.middle_to_buttom_overworld = pygame.Rect(680, 390, 50, 50)
         self.buttom_to_middle_overworld = pygame.Rect(680, 470, 50, 50)
         
-        
+        self.player1_overworld = Player(self.overworld_surface, 800, 463, 50, 50, 200, False, 10, 5)
+
+
         # UNDERWORLD
         self.underworld_surface = pygame.Surface((1920, 540))
 
@@ -62,17 +65,57 @@ class Screen:
         self.middle_to_buttom_underworld = pygame.Rect(680, 100, 50, 50)
         self.buttom_to_middle_underworld = pygame.Rect(680, 20, 50, 50)
 
+        self.player1_underworld = Player(self.underworld_surface, 800, 27, 50, 50, 200, True, 10, 5)
+
     def run(self, dt):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.level_quit = True
             
-            #DEBUG
+            
             if event.type == pygame.KEYDOWN:
+                #Player 1
+                if event.key == pygame.K_d:
+                    self.player1_overworld.going_right = True
+                    self.player1_underworld.going_right = True
+                if event.key == pygame.K_a:
+                    self.player1_overworld.going_left = True
+                    self.player1_underworld.going_left = True
+                
+                if event.key == pygame.K_w:
+                    if self.player1_overworld.rect.colliderect(self.buttom_to_middle_overworld):
+                        self.player1_overworld.y = 394
+                    if self.player1_overworld.rect.colliderect(self.middle_to_top_overworld):
+                        self.player1_overworld.y = 324
+                    if self.player1_underworld.rect.colliderect(self.buttom_to_middle_underworld):
+                        self.player1_underworld.y = 96
+                    if self.player1_underworld.rect.colliderect(self.middle_to_top_underworld):
+                        self.player1_underworld.y = 166
+                if event.key == pygame.K_s:
+                    if self.player1_overworld.rect.colliderect(self.top_to_bottom_overworld):
+                        self.player1_overworld.y = 394
+                    if self.player1_overworld.rect.colliderect(self.middle_to_buttom_overworld):
+                        self.player1_overworld.y = 463
+                    if self.player1_underworld.rect.colliderect(self.top_to_bottom_underworld):
+                        self.player1_underworld.y = 96
+                    if self.player1_underworld.rect.colliderect(self.middle_to_buttom_underworld):
+                        self.player1_underworld.y = 27
+                    
+            
+                #DEBUG
                 if event.key == pygame.K_z:
                     self.is_overworld = False
                 if event.key == pygame.K_x:
                     self.is_overworld = True
+            
+            if event.type == pygame.KEYUP:
+                #Player 2
+                if event.key == pygame.K_d:
+                    self.player1_overworld.going_right = False
+                    self.player1_underworld.going_right = False
+                if event.key == pygame.K_a:
+                    self.player1_overworld.going_left = False
+                    self.player1_underworld.going_left = False
             
         self.screen.fill((255, 255, 255))
         
@@ -81,12 +124,17 @@ class Screen:
         self.overworld_bg_parallax.Map_mover()
         self.overworld_back_wave_parallax.Map_mover()
         if self.is_overworld:
-            self.overworld()
+            self.overworld(dt)
         pygame.draw.rect(self.overworld_surface, (0, 255, 0), self.top_to_bottom_overworld, 2)
         pygame.draw.rect(self.overworld_surface, (0, 255, 0), self.middle_to_top_overworld, 2)
         pygame.draw.rect(self.overworld_surface, (0, 255, 0), self.middle_to_buttom_overworld, 2)
         pygame.draw.rect(self.overworld_surface, (0, 255, 0), self.buttom_to_middle_overworld, 2)
         self.overworld_front_wave_parallax.Map_mover()
+
+        for rect in self.overworld_ship_hitboxes:
+            self.player1_overworld.check_collision(rect)
+
+        self.player1_overworld.update(dt)
         
 
         # UNDERWORLD
@@ -94,31 +142,38 @@ class Screen:
         self.underworld_bg_parallax.Map_mover()
         self.underworld_back_wave_parallax.Map_mover()
         if not self.is_overworld:
-            self.underworld()
+            self.underworld(dt)
         pygame.draw.rect(self.underworld_surface, (0, 255, 0), self.top_to_bottom_underworld, 2)
         pygame.draw.rect(self.underworld_surface, (0, 255, 0), self.middle_to_top_underworld, 2)
         pygame.draw.rect(self.underworld_surface, (0, 255, 0), self.middle_to_buttom_underworld, 2)
         pygame.draw.rect(self.underworld_surface, (0, 255, 0), self.buttom_to_middle_underworld, 2)
         self.underworld_front_wave_parallax.Map_mover()
 
+        for rect in self.underworld_ship_hitboxes:
+            self.player1_underworld.check_collision(rect)
+
+        self.player1_underworld.update(dt)
+
         # Main Screen
         self.screen.blit(self.overworld_surface, (0, 0))
         self.screen.blit(self.underworld_surface, (0, 540))
 
 
-    def overworld(self):
+    def overworld(self, dt):
         self.overworld_surface.blit(self.ship_layer_imgs[0], (500, 140))
         self.overworld_surface.blit(self.ship_ladder, (900, 350))
         self.overworld_surface.blit(self.ship_ladder, (680, 420))
+        self.player1_overworld.draw(dt)
         self.overworld_surface.blit(self.ship_layer_imgs[1], (500, 140))
         for rect in self.overworld_ship_hitboxes:
             pygame.draw.rect(self.overworld_surface, (255, 0, 0), rect, 2)
         
 
-    def underworld(self):
+    def underworld(self, dt):
         self.underworld_surface.blit(self.flipped_ship_layer_imgs[0], (500, 0)),
         self.underworld_surface.blit(self.flipped_ladder, (900, 90))
         self.underworld_surface.blit(self.flipped_ladder, (680, 20))
+        self.player1_underworld.draw(dt)
         self.underworld_surface.blit(self.flipped_ship_layer_imgs[1], (500, 0))
         for rect in self.underworld_ship_hitboxes:
             pygame.draw.rect(self.underworld_surface, (255, 0, 0), rect, 2)
