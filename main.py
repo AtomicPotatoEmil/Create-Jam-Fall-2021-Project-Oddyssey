@@ -18,7 +18,7 @@ while playing:
     
     dt = clock.tick() / 1000
 
-    screens[0].run()
+    screens[0].run(dt)
     if screens[0].level_quit:
         playing = False
 
