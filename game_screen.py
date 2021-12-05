@@ -1,6 +1,8 @@
 import pygame
 from Map import Map
 from Player import Player
+from Cannon import Cannon
+from Cannonball import Cannonball
 
 class Screen:
 
@@ -34,6 +36,18 @@ class Screen:
         self.middle_to_top_overworld = pygame.Rect(900, 390, 50, 50)
         self.middle_to_buttom_overworld = pygame.Rect(680, 390, 50, 50)
         self.buttom_to_middle_overworld = pygame.Rect(680, 470, 50, 50)
+
+        self.overworld_cannons = [
+            Cannon(self.overworld_surface, 980, 460, 100, 45, False, False), 
+            Cannon(self.overworld_surface, 560, 460, 100, 45, True, False),
+            Cannon(self.overworld_surface, 470, 400, 100, 45, True, False),
+            Cannon(self.overworld_surface, 1010, 400, 100, 45, False, False),
+            Cannon(self.overworld_surface, 470, 330, 100, 45, True, False),
+            Cannon(self.overworld_surface, 1010, 320, 100, 45, False, False)
+            ]
+        
+        self.overworld_cannon_balls = []
+
         
         self.player1_overworld = Player(self.overworld_surface, 800, 463, 50, 50, 200, False, 10, 5)
 
@@ -65,6 +79,17 @@ class Screen:
         self.middle_to_buttom_underworld = pygame.Rect(680, 100, 50, 50)
         self.buttom_to_middle_underworld = pygame.Rect(680, 20, 50, 50)
 
+        self.underworld_cannons = [
+            Cannon(self.underworld_surface, 980, 35, 100, 45, False, False), 
+            Cannon(self.underworld_surface, 560, 35, 100, 45, True, False),
+            Cannon(self.underworld_surface, 470, 95, 100, 45, True, False),
+            Cannon(self.underworld_surface, 1010, 95, 100, 45, False, False),
+            Cannon(self.underworld_surface, 470, 165, 100, 45, True, False),
+            Cannon(self.underworld_surface, 1010, 175, 100, 45, False, False)
+            ]
+        
+        self.underworld_cannon_balls = []
+
         self.player1_underworld = Player(self.underworld_surface, 800, 27, 50, 50, 200, True, 10, 5)
 
     def run(self, dt):
@@ -81,6 +106,21 @@ class Screen:
                 if event.key == pygame.K_a:
                     self.player1_overworld.going_left = True
                     self.player1_underworld.going_left = True
+
+                for cannon in self.overworld_cannons:
+                    if event.key == pygame.K_e and cannon.selected:
+                        if cannon.facing_left:
+                            self.overworld_cannon_balls.append(Cannonball(self.overworld_surface, pygame.image.load("data/sprites/ship/cannonBall.png"), -200, cannon.x - (cannon.width / 2) + 25, cannon.y))
+                        else:
+                            self.overworld_cannon_balls.append(Cannonball(self.overworld_surface, pygame.image.load("data/sprites/ship/cannonBall.png"), 200, cannon.x - (cannon.width / 2) + 150, cannon.y))
+                for cannon in self.underworld_cannons:
+                    if event.key == pygame.K_e and cannon.selected:
+                        if cannon.facing_left:
+                            self.underworld_cannon_balls.append(Cannonball(self.underworld_surface, pygame.image.load("data/sprites/ship/cannonBall.png"), -200, cannon.x - (cannon.width / 2) + 25, cannon.y))
+                        else:
+                            self.underworld_cannon_balls.append(Cannonball(self.underworld_surface, pygame.image.load("data/sprites/ship/cannonBall.png"), 200, cannon.x - (cannon.width / 2) + 150, cannon.y))
+
+
                 
                 if event.key == pygame.K_w:
                     if self.player1_overworld.rect.colliderect(self.buttom_to_middle_overworld):
@@ -135,7 +175,45 @@ class Screen:
             self.player1_overworld.check_collision(rect)
 
         self.player1_overworld.update(dt)
-        
+
+
+        for cannon in self.overworld_cannons:
+            if cannon.rect.colliderect(self.player1_overworld.rect) and self.player1_overworld.has_cannon_ball:
+                cannon.selected = True
+            else:
+                cannon.selected = False
+
+        """"
+        if self.cannon1_overworld.rect.colliderect(self.player1_overworld.rect) and self.player1_overworld.has_cannon_ball:
+            self.cannon1_overworld.selected = True
+        else:
+            self.cannon1_overworld.selected = False
+
+        if self.cannon2_overworld.rect.colliderect(self.player1_overworld.rect) and self.player1_overworld.has_cannon_ball:
+            self.cannon2_overworld.selected = True
+        else:
+            self.cannon2_overworld.selected = False
+
+        if self.cannon3_overworld.rect.colliderect(self.player1_overworld.rect) and self.player1_overworld.has_cannon_ball:
+            self.cannon3_overworld.selected = True
+        else:
+            self.cannon3_overworld.selected = False
+
+        if self.cannon4_overworld.rect.colliderect(self.player1_overworld.rect) and self.player1_overworld.has_cannon_ball:
+            self.cannon4_overworld.selected = True
+        else:
+            self.cannon4_overworld.selected = False
+
+        if self.cannon5_overworld.rect.colliderect(self.player1_overworld.rect) and self.player1_overworld.has_cannon_ball:
+            self.cannon5_overworld.selected = True
+        else:
+            self.cannon5_overworld.selected = False
+
+        if self.cannon6_overworld.rect.colliderect(self.player1_overworld.rect) and self.player1_overworld.has_cannon_ball:
+            self.cannon6_overworld.selected = True
+        else:
+            self.cannon6_overworld.selected = False
+        """
 
         # UNDERWORLD
         self.underworld_surface.fill((200, 0, 0))
@@ -154,6 +232,12 @@ class Screen:
 
         self.player1_underworld.update(dt)
 
+        for cannon in self.underworld_cannons:
+            if cannon.rect.colliderect(self.player1_underworld.rect) and self.player1_underworld.has_cannon_ball:
+                cannon.selected = True
+            else:
+                cannon.selected = False
+
         # Main Screen
         self.screen.blit(self.overworld_surface, (0, 0))
         self.screen.blit(self.underworld_surface, (0, 540))
@@ -163,6 +247,16 @@ class Screen:
         self.overworld_surface.blit(self.ship_layer_imgs[0], (500, 140))
         self.overworld_surface.blit(self.ship_ladder, (900, 350))
         self.overworld_surface.blit(self.ship_ladder, (680, 420))
+
+        for ball in self.overworld_cannon_balls:
+            ball.shoot(dt)
+            if ball.x > 1920 or ball.x + 28 < 0:
+                self.overworld_cannon_balls.remove(ball)
+        if len(self.underworld_cannon_balls) > 0:
+            self.underworld_cannon_balls.clear()
+        for cannon in self.overworld_cannons:
+            cannon.draw()
+
         self.player1_overworld.draw(dt)
         self.overworld_surface.blit(self.ship_layer_imgs[1], (500, 140))
         for rect in self.overworld_ship_hitboxes:
@@ -173,6 +267,14 @@ class Screen:
         self.underworld_surface.blit(self.flipped_ship_layer_imgs[0], (500, 0)),
         self.underworld_surface.blit(self.flipped_ladder, (900, 90))
         self.underworld_surface.blit(self.flipped_ladder, (680, 20))
+        for ball in self.underworld_cannon_balls:
+            ball.shoot(dt)
+            if ball.x > 1920 or ball.x + 28 < 0:
+                self.underworld_cannon_balls.remove(ball)
+        if len(self.overworld_cannon_balls) > 0:
+            self.overworld_cannon_balls.clear()
+        for cannon in self.underworld_cannons:
+            cannon.draw()
         self.player1_underworld.draw(dt)
         self.underworld_surface.blit(self.flipped_ship_layer_imgs[1], (500, 0))
         for rect in self.underworld_ship_hitboxes:
